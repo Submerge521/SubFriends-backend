@@ -1,6 +1,6 @@
-package com.submerge.usercenter.service;
+package com.submerge.subfriends.service;
 
-import com.submerge.usercenter.model.domain.User;
+import com.submerge.subfriends.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;

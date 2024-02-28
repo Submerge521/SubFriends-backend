@@ -1,4 +1,4 @@
-package com.submerge.usercenter;
+package com.submerge.subfriends;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;

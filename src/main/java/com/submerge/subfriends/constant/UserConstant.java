@@ -1,4 +1,4 @@
-package com.submerge.usercenter.constant;
+package com.submerge.subfriends.constant;
 
 /**
  * ClassName: UserConstant

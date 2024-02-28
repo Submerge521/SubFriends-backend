@@ -1,14 +1,14 @@
-package com.submerge.usercenter.service.impl;
+package com.submerge.subfriends.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.submerge.usercenter.common.ErrorCode;
-import com.submerge.usercenter.exception.BusinessException;
-import com.submerge.usercenter.model.domain.User;
-import com.submerge.usercenter.service.UserService;
-import com.submerge.usercenter.mapper.UserMapper;
+import com.submerge.subfriends.common.ErrorCode;
+import com.submerge.subfriends.exception.BusinessException;
+import com.submerge.subfriends.mapper.UserMapper;
+import com.submerge.subfriends.model.domain.User;
+import com.submerge.subfriends.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -17,15 +17,13 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.sql.rowset.spi.SyncResolver;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.submerge.usercenter.constant.UserConstant.USER_LOGIN_STATE;
+import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author Lenovo
@@ -34,6 +32,7 @@ import static com.submerge.usercenter.constant.UserConstant.USER_LOGIN_STATE;
  */
 @Service
 @Slf4j
+@SuppressWarnings("all")
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
 

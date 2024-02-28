@@ -1,6 +1,6 @@
-package com.submerge.usercenter.mapper;
+package com.submerge.subfriends.mapper;
 
-import com.submerge.usercenter.model.domain.User;
+import com.submerge.subfriends.model.domain.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

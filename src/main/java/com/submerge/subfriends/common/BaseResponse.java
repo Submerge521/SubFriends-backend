@@ -1,4 +1,4 @@
-package com.submerge.usercenter.common;
+package com.submerge.subfriends.common;
 
 import lombok.Data;
 

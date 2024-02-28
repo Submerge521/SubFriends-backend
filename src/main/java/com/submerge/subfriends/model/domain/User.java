@@ -1,4 +1,4 @@
-package com.submerge.usercenter.model.domain;
+package com.submerge.subfriends.model.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;

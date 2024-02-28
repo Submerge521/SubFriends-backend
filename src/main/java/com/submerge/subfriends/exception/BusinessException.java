@@ -1,6 +1,6 @@
-package com.submerge.usercenter.exception;
+package com.submerge.subfriends.exception;
 
-import com.submerge.usercenter.common.ErrorCode;
+import com.submerge.subfriends.common.ErrorCode;
 
 /**
  * ClassName: BusinessException

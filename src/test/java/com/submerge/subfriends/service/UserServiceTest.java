@@ -1,14 +1,9 @@
-package com.submerge.usercenter.service;
+package com.submerge.subfriends.service;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.submerge.usercenter.model.domain.User;
-import org.junit.Assert;
-import org.junit.jupiter.api.Assertions;
+import com.submerge.subfriends.model.domain.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 

@@ -1,8 +1,8 @@
-package com.submerge.usercenter.exception;
+package com.submerge.subfriends.exception;
 
-import com.submerge.usercenter.common.BaseResponse;
-import com.submerge.usercenter.common.ErrorCode;
-import com.submerge.usercenter.common.ResultUtils;
+import com.submerge.subfriends.common.BaseResponse;
+import com.submerge.subfriends.common.ErrorCode;
+import com.submerge.subfriends.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

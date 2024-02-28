@@ -1,26 +1,24 @@
-package com.submerge.usercenter.controller;
+package com.submerge.subfriends.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.submerge.usercenter.common.BaseResponse;
-import com.submerge.usercenter.common.ErrorCode;
-import com.submerge.usercenter.common.ResultUtils;
-import com.submerge.usercenter.exception.BusinessException;
-import com.submerge.usercenter.model.domain.User;
-import com.submerge.usercenter.model.request.UserLoginRequest;
-import com.submerge.usercenter.model.request.UserRegisterRequest;
-import com.submerge.usercenter.service.UserService;
-import org.apache.catalina.LifecycleState;
+import com.submerge.subfriends.common.BaseResponse;
+import com.submerge.subfriends.common.ErrorCode;
+import com.submerge.subfriends.common.ResultUtils;
+import com.submerge.subfriends.exception.BusinessException;
+import com.submerge.subfriends.model.domain.User;
+import com.submerge.subfriends.model.request.UserLoginRequest;
+import com.submerge.subfriends.model.request.UserRegisterRequest;
+import com.submerge.subfriends.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.submerge.usercenter.constant.UserConstant.ADMIN_ROLE;
-import static com.submerge.usercenter.constant.UserConstant.USER_LOGIN_STATE;
+import static com.submerge.subfriends.constant.UserConstant.ADMIN_ROLE;
+import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * ClassName: UserController
