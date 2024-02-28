@@ -2,6 +2,8 @@ package com.submerge.usercenter.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.submerge.usercenter.common.ErrorCode;
 import com.submerge.usercenter.exception.BusinessException;
 import com.submerge.usercenter.model.domain.User;
@@ -10,13 +12,18 @@ import com.submerge.usercenter.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.sql.rowset.spi.SyncResolver;
+import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.submerge.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
@@ -169,6 +176,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setUserStatus(originUser.getUserStatus());
         safetyUser.setCreateTime(originUser.getCreateTime());
         safetyUser.setStuCode(originUser.getStuCode());
+        safetyUser.setTags(originUser.getTags());
         return safetyUser;
     }
 
@@ -187,11 +195,67 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 根据标签搜索用户
-     * @param tagList 用户要拥有的标签
+     *
+     * @param tagNameList 用户要拥有的标签
+     * @return
      */
-   public void searchUserByTags(List<String> tagList){
+    @Override
+    public List<User> searchUserByTags(List<String> tagNameList){
+        if (CollectionUtils.isEmpty(tagNameList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return sqlSearch(tagNameList);   //先 sql query time = 5982 后 memory query time = 5606
+//        return memorySearch(tagNameList);    // 先 memory query time = 5938 后 sql query time = 5956 （清过缓存）
+    }
 
-   }
+    /**
+     *     sql运行查询
+     * @param tagNameList
+     * @return
+     */
+    public List<User> sqlSearch(List<String> tagNameList){
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        long starTime = System.currentTimeMillis();
+        //拼接tag
+        // like '%Java%' and like '%Python%'
+        for (String tagList : tagNameList) {
+            queryWrapper = queryWrapper.like("tags", tagList);
+        }
+        List<User> userList = userMapper.selectList(queryWrapper);
+        log.info("sql query time = " + (System.currentTimeMillis() - starTime));
+        return  userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    /**
+     *     查询，内存运行筛选
+     * @param tagNameList
+     * @return
+     */
+    @Override
+    public List<User> memorySearch(List<String> tagNameList){
+
+        //1.先查询所有用户
+        QueryWrapper queryWrapper = new QueryWrapper<>();
+        long starTime = System.currentTimeMillis();
+        List<User> userList = userMapper.selectList(queryWrapper);
+        Gson gson = new Gson();
+        //2.判断内存中是否包含要求的标签
+        userList.stream().filter(user -> {
+            String tagstr = user.getTags();
+            if (StringUtils.isBlank(tagstr)){
+                return false;
+            }
+            Set<String> tempTagNameSet =  gson.fromJson(tagstr,new TypeToken<Set<String>>(){}.getType());
+            for (String tagName : tagNameList){
+                if (!tempTagNameSet.contains(tagName)){
+                    return false;
+                }
+            }
+            return true;
+        }).map(this::getSafetyUser).collect(Collectors.toList());
+        log.info("memory query time = " + (System.currentTimeMillis() - starTime));
+        return  userList;
+    }
 
 
 
