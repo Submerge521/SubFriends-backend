@@ -2,7 +2,7 @@ package com.submerge.subfriends.constant;
 
 /**
  * ClassName: UserConstant
- * Package: com.submerge.usercenter.constant
+ * Package: com.submerge.SubFriends.constant
  * Description: 用户常量
  *
  * @Author Submerge--WangDong

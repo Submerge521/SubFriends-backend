@@ -2,7 +2,7 @@ package com.submerge.subfriends.common;
 
 /**
  * ClassName: ErrorCode
- * Package: com.submerge.usercenter.common
+ * Package: com.submerge.SubFriends.common
  * Description: 错误码
  *
  * @Author Submerge--WangDong

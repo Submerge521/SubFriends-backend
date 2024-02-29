@@ -7,7 +7,7 @@ import org.springframework.util.DigestUtils;
 import java.security.NoSuchAlgorithmException;
 
 @SpringBootTest
-class UserCenterApplicationTests {
+class SubFriendsApplicationTests {
 
 	@Test
 	void testDegist() throws NoSuchAlgorithmException {

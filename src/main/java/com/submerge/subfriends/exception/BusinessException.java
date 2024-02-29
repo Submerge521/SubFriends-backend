@@ -4,7 +4,7 @@ import com.submerge.subfriends.common.ErrorCode;
 
 /**
  * ClassName: BusinessException
- * Package: com.submerge.usercenter.exception
+ * Package: com.submerge.SubFriends.exception
  * Description: 自定义异常类
  *
  * @Author Submerge--WangDong

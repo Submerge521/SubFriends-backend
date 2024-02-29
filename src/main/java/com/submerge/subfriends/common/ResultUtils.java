@@ -2,7 +2,7 @@ package com.submerge.subfriends.common;
 
 /**
  * ClassName: ResultUtils
- * Package: com.submerge.usercenter.common
+ * Package: com.submerge.SubFriends.common
  * Description: 返回工具类
  *
  * @Author Submerge--WangDong

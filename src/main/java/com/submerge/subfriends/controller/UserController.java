@@ -1,6 +1,7 @@
 package com.submerge.subfriends.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import com.submerge.subfriends.common.BaseResponse;
 import com.submerge.subfriends.common.ErrorCode;
 import com.submerge.subfriends.common.ResultUtils;
@@ -9,11 +10,13 @@ import com.submerge.subfriends.model.domain.User;
 import com.submerge.subfriends.model.request.UserLoginRequest;
 import com.submerge.subfriends.model.request.UserRegisterRequest;
 import com.submerge.subfriends.service.UserService;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +25,7 @@ import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * ClassName: UserController
- * Package: com.submerge.usercenter.controller
+ * Package: com.submerge.SubFriends.controller
  * Description: 用户接口
  *
  * @Author Submerge--WangDong
@@ -31,6 +34,8 @@ import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
+@Api(tags = "用户接口")
+@CrossOrigin(origins = {"http://localhost:3000"})
 public class UserController {
 
     @Resource
@@ -136,5 +141,16 @@ public class UserController {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         return true;
+    }
+
+
+    @GetMapping("/search/tags")
+    public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList){
+        // 判空
+        if(CollectionUtils.isEmpty(tagNameList)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        List<User> userList = userService.searchUserByTags(tagNameList);
+        return ResultUtils.success(userList);
     }
 }

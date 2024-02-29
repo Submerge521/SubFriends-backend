@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * ClassName: BaseResponse
- * Package: com.submerge.usercenter.common
+ * Package: com.submerge.SubFriends.common
  * Description: 通用返回类
  *
  * @Author Submerge--WangDong

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * ClassName: UserServiceTest
- * Package: com.submerge.usercenter.service
+ * Package: com.submerge.SubFriends.service
  * Description: 用户服务测试
  *
  * @Author Submerge--WangDong

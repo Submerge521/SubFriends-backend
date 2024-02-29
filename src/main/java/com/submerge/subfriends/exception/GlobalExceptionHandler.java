@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
  * ClassName: GlobalExceptionHandler
- * Package: com.submerge.usercenter.exception
+ * Package: com.submerge.SubFriends.exception
  * Description:
  *
  * @Author Submerge--WangDong

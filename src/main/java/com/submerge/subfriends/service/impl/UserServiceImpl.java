@@ -17,7 +17,9 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -212,7 +214,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @param tagNameList
      * @return
      */
-    public List<User> sqlSearch(List<String> tagNameList){
+    @Deprecated //方法过时
+    private List<User> sqlSearch(List<String> tagNameList){
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         long starTime = System.currentTimeMillis();
         //拼接tag
@@ -245,6 +248,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 return false;
             }
             Set<String> tempTagNameSet =  gson.fromJson(tagstr,new TypeToken<Set<String>>(){}.getType());
+            // 判空：Java8新特性，先传递一个可能为空的对象，如果不为空则传递原值，如果为空则传递orElse中的值
+            tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
             for (String tagName : tagNameList){
                 if (!tempTagNameSet.contains(tagName)){
                     return false;
@@ -255,8 +260,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         log.info("memory query time = " + (System.currentTimeMillis() - starTime));
         return  userList;
     }
-
-
 
 }
 

@@ -4,12 +4,15 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @author Submerge
+ */
 @SpringBootApplication
-@MapperScan("com.submerge.usercenter.mapper")
-public class UserCenterApplication {
+@MapperScan("com.submerge.subfriends.mapper")
+public class SubFriendsApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(UserCenterApplication.class, args);
+		SpringApplication.run(SubFriendsApplication.class, args);
 	}
 
 }

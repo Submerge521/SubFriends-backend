@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * ClassName: UserLoginRequest
- * Package: com.submerge.usercenter.model.request
+ * Package: com.submerge.SubFriends.model.request
  * Description:
  *
  * @Author Submerge--WangDong

@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * ClassName: UserRegisterRequest
- * Package: com.submerge.usercenter.model.request
+ * Package: com.submerge.SubFriends.model.request
  * Description: 用户注册请求体
  *
  * @Author Submerge--WangDong
