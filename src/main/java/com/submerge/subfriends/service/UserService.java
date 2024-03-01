@@ -1,10 +1,15 @@
 package com.submerge.subfriends.service;
 
+import com.submerge.subfriends.common.ErrorCode;
+import com.submerge.subfriends.exception.BusinessException;
 import com.submerge.subfriends.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static com.submerge.subfriends.constant.UserConstant.ADMIN_ROLE;
+import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author Lenovo
@@ -62,4 +67,43 @@ public interface UserService extends IService<User> {
 
     List<User> memorySearch(List<String> tagNameList);
 
+    /**
+     * 更新用户信息
+     *
+     * @param user
+     * @param loginUser
+     * @return
+     */
+    Integer updateUser(User user, User loginUser);
+
+    /**
+     * 获取当前登录用户信息
+     *
+     * @return
+     */
+    User getLoginUser(HttpServletRequest request);
+
+
+    /**
+     * 是否为管理员
+     *
+     * @param request http请求
+     * @return boolean值
+     */
+    boolean isAdmin(HttpServletRequest request);
+
+    /**
+     * 是否为管理员
+     *
+     * @param loginUser
+     * @return boolean值
+     */
+    boolean isAdmin(User loginUser);
+
+    /**
+     * 获取当前用户
+     * @param request
+     * @return
+     */
+    User getCurrentUser(HttpServletRequest request);
 }

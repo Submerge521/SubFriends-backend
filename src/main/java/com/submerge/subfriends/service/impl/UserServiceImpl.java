@@ -25,6 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.submerge.subfriends.constant.UserConstant.ADMIN_ROLE;
 import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -201,8 +202,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * @return
      */
     @Override
-    public List<User> searchUserByTags(List<String> tagNameList){
-        if (CollectionUtils.isEmpty(tagNameList)){
+    public List<User> searchUserByTags(List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         return sqlSearch(tagNameList);   //先 sql query time = 5982 后 memory query time = 5606
@@ -210,12 +211,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     /**
-     *     sql运行查询
+     * sql运行查询
+     *
      * @param tagNameList
      * @return
      */
     @Deprecated //方法过时
-    private List<User> sqlSearch(List<String> tagNameList){
+    private List<User> sqlSearch(List<String> tagNameList) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         long starTime = System.currentTimeMillis();
         //拼接tag
@@ -225,16 +227,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         List<User> userList = userMapper.selectList(queryWrapper);
         log.info("sql query time = " + (System.currentTimeMillis() - starTime));
-        return  userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
+        return userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
     }
 
     /**
-     *     查询，内存运行筛选
+     * 查询，内存运行筛选
+     *
      * @param tagNameList
      * @return
      */
     @Override
-    public List<User> memorySearch(List<String> tagNameList){
+    public List<User> memorySearch(List<String> tagNameList) {
 
         //1.先查询所有用户
         QueryWrapper queryWrapper = new QueryWrapper<>();
@@ -244,23 +247,90 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         //2.判断内存中是否包含要求的标签
         userList.stream().filter(user -> {
             String tagstr = user.getTags();
-            if (StringUtils.isBlank(tagstr)){
+            if (StringUtils.isBlank(tagstr)) {
                 return false;
             }
-            Set<String> tempTagNameSet =  gson.fromJson(tagstr,new TypeToken<Set<String>>(){}.getType());
+            Set<String> tempTagNameSet = gson.fromJson(tagstr, new TypeToken<Set<String>>() {
+            }.getType());
             // 判空：Java8新特性，先传递一个可能为空的对象，如果不为空则传递原值，如果为空则传递orElse中的值
             tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
-            for (String tagName : tagNameList){
-                if (!tempTagNameSet.contains(tagName)){
+            for (String tagName : tagNameList) {
+                if (!tempTagNameSet.contains(tagName)) {
                     return false;
                 }
             }
             return true;
         }).map(this::getSafetyUser).collect(Collectors.toList());
         log.info("memory query time = " + (System.currentTimeMillis() - starTime));
-        return  userList;
+        return userList;
     }
 
+    @Override
+    public User getLoginUser(HttpServletRequest request) {
+        // 获取登录用户
+        if (request == null) {
+            return null;
+        }
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (userObj == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        return (User) userObj;
+    }
+
+    @Override
+    public Integer updateUser(User user, User loginUser) {
+        long userId = user.getId();
+        // 如果是管理员，允许更新任意用户
+        if (userId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //todo 如果用户什么更新参数都没有传，直接返回，不执行update语句
+
+        //如果不是管理员，只允许更新当前（自己）用户
+        if (!isAdmin(loginUser) && userId != loginUser.getId()) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User oldUser = userMapper.selectById(userId);
+        if (oldUser == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        return userMapper.updateById(user);
+    }
+
+
+
+    @Override
+    public boolean isAdmin(HttpServletRequest request) {
+        // 鉴权  仅管理员可查询
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User user = (User) userObj;
+        return user != null && user.getUserRole() == ADMIN_ROLE;
+    }
+
+    @Override
+    public boolean isAdmin(User loginUser) {
+        // 鉴权  仅管理员可查询
+        return loginUser != null && loginUser.getUserRole() == ADMIN_ROLE;
+
+    }
+
+     /**
+     * 获取当前用户
+     * @param request
+     * @return
+     */
+    @Override
+    public User getCurrentUser(HttpServletRequest request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        return user;
+    }
 }
 
 

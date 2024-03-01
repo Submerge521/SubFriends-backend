@@ -1,6 +1,8 @@
 package com.submerge.subfriends.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import com.submerge.subfriends.common.BaseResponse;
 import com.submerge.subfriends.common.ErrorCode;
@@ -16,11 +18,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.submerge.subfriends.constant.UserConstant.ADMIN_ROLE;
 import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -101,7 +101,7 @@ public class UserController {
     @GetMapping("/search")
     public BaseResponse<List<User>> searchUsers(String userName, HttpServletRequest request) {
 
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
@@ -116,7 +116,7 @@ public class UserController {
 
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         if (id <= 0) {
@@ -127,30 +127,43 @@ public class UserController {
     }
 
 
-    /**
-     * 是否为管理员
-     *
-     * @param request http请求
-     * @return boolean值
-     */
-    private boolean isAdmin(HttpServletRequest request) {
-        // 鉴权  仅管理员可查询
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User user = (User) userObj;
-        if (user == null || user.getUserRole() != ADMIN_ROLE) {
-            throw new BusinessException(ErrorCode.NO_AUTH);
-        }
-        return true;
-    }
-
-
     @GetMapping("/search/tags")
-    public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList){
+    public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList) {
         // 判空
-        if(CollectionUtils.isEmpty(tagNameList)){
+        if (CollectionUtils.isEmpty(tagNameList)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         List<User> userList = userService.searchUserByTags(tagNameList);
         return ResultUtils.success(userList);
+    }
+
+    /**
+     * 更新用户信息
+     *
+     * @param user
+     * @return
+     */
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUser(@RequestBody User user, HttpServletRequest request) {
+        // 校验参数是否为空
+        if (CollectionUtils.isEmpty(user)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 校验权限
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        // 更新用户信息
+        Integer result = userService.updateUser(user, loginUser);
+        return ResultUtils.success(result);
+    }
+
+    @GetMapping("/recommend")
+    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request) {
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        Page<User> userList = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
+        return ResultUtils.success(userList);
+
     }
 }
