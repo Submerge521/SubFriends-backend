@@ -1,7 +1,6 @@
 package com.submerge.subfriends.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import com.submerge.subfriends.common.BaseResponse;
@@ -13,12 +12,16 @@ import com.submerge.subfriends.model.request.UserLoginRequest;
 import com.submerge.subfriends.model.request.UserRegisterRequest;
 import com.submerge.subfriends.service.UserService;
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
@@ -36,10 +39,14 @@ import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
 @RequestMapping("/user")
 @Api(tags = "用户接口")
 @CrossOrigin(origins = {"http://localhost:3000"})
+@Slf4j
 public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private RedisTemplate redisTemplate;
 
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
@@ -161,9 +168,25 @@ public class UserController {
 
     @GetMapping("/recommend")
     public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request) {
+        // 如果有缓存，直接读缓存
+        User loginUser = userService.getLoginUser(request);
+        // 定义key
+        String redisKey = String.format("subfrineds:user:recommend:%s", loginUser.getId());
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        Page<User> userPage = (Page<User>) valueOperations.get(redisKey);
+        if (userPage != null) {
+            return ResultUtils.success(userPage);
+        }
+        // 如果没缓存，查数据库
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        Page<User> userList = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
-        return ResultUtils.success(userList);
+        userPage = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
+        // 写缓存
+        try {
+            valueOperations.set(redisKey,userPage,30000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("redis set key error:",e);
+        }
+        return ResultUtils.success(userPage);
 
     }
 }

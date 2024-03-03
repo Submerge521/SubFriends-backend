@@ -11,6 +11,7 @@ import com.submerge.subfriends.model.domain.User;
 import com.submerge.subfriends.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -41,6 +42,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private RedisTemplate redisTemplate;
 
     /**
      * 盐值，混淆密码
@@ -285,8 +289,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (userId <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        //todo 如果用户什么更新参数都没有传，直接返回，不执行update语句
-
+        //Todo 如果用户什么更新参数都没有传，直接返回，不执行update语句
+        if(user == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
         //如果不是管理员，只允许更新当前（自己）用户
         if (!isAdmin(loginUser) && userId != loginUser.getId()) {
             throw new BusinessException(ErrorCode.NO_AUTH);
