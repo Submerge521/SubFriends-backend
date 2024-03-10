@@ -1,29 +1,35 @@
-package com.submerge.subfriends.model.domain;
+package com.submerge.subfriends.model.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 用户
+ * ClassName: UserVO
+ * Package: com.submerge.subfriends.model.vo
+ * Description: 用户包装类
  *
- * @TableName user
+ * @Author Submerge--WangDong
+ * @Create 2024-03-10 15:49
+ * @Version 1.0
  */
-@TableName(value = "user")
 @Data
-public class User implements Serializable {
-    /**
-     *
+public class UserVO implements Serializable {
+
+    private static final long serialVersionUID = 2085299047345003239L;
+   /**
+     * id
      */
-    @TableId(type = IdType.AUTO)
-    private Long id;
+    private long id;
 
     /**
      * 用户昵称
      */
-    private String userName;
+    private String username;
 
     /**
      * 账号
@@ -41,11 +47,6 @@ public class User implements Serializable {
     private Integer gender;
 
     /**
-     * 密码
-     */
-    private String userPassword;
-
-    /**
      * 电话
      */
     private String phone;
@@ -56,7 +57,12 @@ public class User implements Serializable {
     private String email;
 
     /**
-     * 状态 0 -正常
+     * 标签列表 json
+     */
+    private String tags;
+
+    /**
+     * 状态 0 - 正常
      */
     private Integer userStatus;
 
@@ -66,15 +72,9 @@ public class User implements Serializable {
     private Date createTime;
 
     /**
-     * 更新时间
+     *
      */
     private Date updateTime;
-
-    /**
-     * 是否删除
-     */
-    @TableLogic
-    private Integer isDelete;
 
     /**
      * 用户角色 0 - 普通用户 1 - 管理员
@@ -86,10 +86,7 @@ public class User implements Serializable {
      */
     private String stuCode;
 
-    /**
-     * 标签列表 json
-     */
-    private String tags;
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
+
+
+
 }

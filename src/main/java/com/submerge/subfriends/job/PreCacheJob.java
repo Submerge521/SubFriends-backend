@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.submerge.subfriends.model.domain.User;
 import com.submerge.subfriends.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,25 +36,47 @@ public class PreCacheJob {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Resource
+    private RedissonClient redissonClient;
+
     // 重点用户
     private List<Long> mainUserList = Arrays.asList(1L);
 
     /**
      * 每天执行，预热推荐用户
      */
-    @Scheduled(cron = "0 59 13 * * *")
+    @Scheduled(cron = "0 58 16 * * *")
     public void doCacheRecommendUser() {
-        for (Long userId : mainUserList) {
-            QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-            Page<User> userPage = userService.page(new Page<>(1, 20), userQueryWrapper);
-            String redisKey = String.format("subfrineds:user:recommend:%s", userId);
-            ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-            try {
-                valueOperations.set(redisKey, userPage, 30000, TimeUnit.MILLISECONDS);
-            } catch (Exception e) {
-                log.error("redis set key error:", e);
+        RLock lock = redissonClient.getLock("subfrineds:precachejob:docache:lock");
+        try {
+            // 只有一个线程能获取到锁
+            if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
+//                Thread.sleep(300000);
+                System.out.println("getLock:" + Thread.currentThread().getId());
+                for (Long userId : mainUserList) {
+                    QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+                    Page<User> userPage = userService.page(new Page<>(1, 20), userQueryWrapper);
+                    String redisKey = String.format("subfrineds:user:recommend:%s", userId);
+                    ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+                    try {
+                        valueOperations.set(redisKey, userPage, 30000, TimeUnit.MILLISECONDS);
+                    } catch (Exception e) {
+                        log.error("redis set key error:", e);
+                    }
+                }
+            }
+
+        } catch (InterruptedException e) {
+            log.error("doCacheRecommendUser error", e);
+        } finally {
+            // 只能释放自己的锁
+            if (lock.isHeldByCurrentThread()) {
+                System.out.println("unLock:" + Thread.currentThread().getId());
+                //释放锁
+                lock.unlock();
             }
         }
+
 
     }
 
