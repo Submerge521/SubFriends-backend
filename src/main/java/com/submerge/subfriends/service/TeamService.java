@@ -5,6 +5,7 @@ import com.submerge.subfriends.dto.TeamQuery;
 import com.submerge.subfriends.model.domain.Team;
 import com.submerge.subfriends.model.domain.User;
 import com.submerge.subfriends.model.request.TeamJoinRequest;
+import com.submerge.subfriends.model.request.TeamQuitRequest;
 import com.submerge.subfriends.model.request.TeamUpdateRequest;
 import com.submerge.subfriends.model.vo.TeamUserVO;
 
@@ -48,4 +49,20 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     boolean joinTeam(TeamJoinRequest teamJoinRequest,User loginUser);
+
+    /**
+     * 退出队伍
+     * @param teamQuitRequest
+     * @param loginUser
+     * @return
+     */
+    boolean quitTeam(TeamQuitRequest teamQuitRequest, User loginUser);
+
+    /**
+     * 删除（解散）队伍
+     * @param id
+     * @param loginUser
+     * @return
+     */
+    boolean deleteTeam(long id,User loginUser);
 }

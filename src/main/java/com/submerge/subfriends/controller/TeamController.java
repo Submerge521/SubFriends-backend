@@ -11,10 +11,12 @@ import com.submerge.subfriends.model.domain.Team;
 import com.submerge.subfriends.model.domain.User;
 import com.submerge.subfriends.model.request.TeamAddRequest;
 import com.submerge.subfriends.model.request.TeamJoinRequest;
+import com.submerge.subfriends.model.request.TeamQuitRequest;
 import com.submerge.subfriends.model.request.TeamUpdateRequest;
 import com.submerge.subfriends.model.vo.TeamUserVO;
 import com.submerge.subfriends.service.TeamService;
 import com.submerge.subfriends.service.UserService;
+import com.submerge.subfriends.service.UserTeamService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -66,23 +68,6 @@ public class TeamController {
         return ResultUtils.success(teamId);
     }
 
-    /**
-     * 删除队伍
-     *
-     * @param id
-     * @return
-     */
-    @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteTeam(@RequestBody long id) {
-        if (id <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        boolean result = teamService.removeById(id);
-        if (!result) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除数据失败");
-        }
-        return ResultUtils.success(true);
-    }
 
     /**
      * 更新队伍信息
@@ -161,7 +146,44 @@ public class TeamController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
-        boolean result = teamService.joinTeam(teamJoinRequest,loginUser);
+        boolean result = teamService.joinTeam(teamJoinRequest, loginUser);
         return ResultUtils.success(result);
     }
+
+    /**
+     * 退出队伍
+     *
+     * @param teamJoinRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(@RequestBody TeamQuitRequest teamQuitRequest, HttpServletRequest request) {
+        if (teamQuitRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.quitTeam(teamQuitRequest, loginUser);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 删除队伍
+     *
+     * @param id
+     * @return
+     */
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deleteTeam(@RequestBody long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.deleteTeam(id, loginUser);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除数据失败");
+        }
+        return ResultUtils.success(true);
+    }
+
 }
