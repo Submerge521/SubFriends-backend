@@ -10,6 +10,7 @@ import com.submerge.subfriends.exception.BusinessException;
 import com.submerge.subfriends.model.domain.User;
 import com.submerge.subfriends.model.request.UserLoginRequest;
 import com.submerge.subfriends.model.request.UserRegisterRequest;
+import com.submerge.subfriends.model.vo.UserVO;
 import com.submerge.subfriends.service.UserService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
+import sun.security.action.GetLongAction;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -172,7 +174,7 @@ public class UserController {
         User loginUser = userService.getLoginUser(request);
         // 定义key
         String redisKey = String.format("subfrineds:user:recommend:%s", loginUser.getId());
-        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         Page<User> userPage = (Page<User>) valueOperations.get(redisKey);
         if (userPage != null) {
             return ResultUtils.success(userPage);
@@ -182,11 +184,26 @@ public class UserController {
         userPage = userService.page(new Page<>(pageNum, pageSize), userQueryWrapper);
         // 写缓存
         try {
-            valueOperations.set(redisKey,userPage,30000, TimeUnit.MILLISECONDS);
+            valueOperations.set(redisKey, userPage, 30000, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            log.error("redis set key error:",e);
+            log.error("redis set key error:", e);
         }
         return ResultUtils.success(userPage);
 
+    }
+
+    /**
+     * 获取最匹配的用户
+     * @param num
+     * @param request
+     * @return
+     */
+    @GetMapping("/match")
+    public BaseResponse<List<User>> matchUsers(long num, HttpServletRequest request) {
+        if (num <= 0 || num > 20) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.matchUsers(num,loginUser));
     }
 }

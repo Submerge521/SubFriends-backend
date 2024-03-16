@@ -1,15 +1,10 @@
 package com.submerge.subfriends.service;
 
-import com.submerge.subfriends.common.ErrorCode;
-import com.submerge.subfriends.exception.BusinessException;
 import com.submerge.subfriends.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-
-import static com.submerge.subfriends.constant.UserConstant.ADMIN_ROLE;
-import static com.submerge.subfriends.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author Lenovo
@@ -106,4 +101,14 @@ public interface UserService extends IService<User> {
      * @return
      */
     User getCurrentUser(HttpServletRequest request);
+
+
+    /**
+     * 匹配用户
+     *
+     * @param num
+     * @param loginUser
+     * @return
+     */
+    List<User> matchUsers(long num, User loginUser);
 }

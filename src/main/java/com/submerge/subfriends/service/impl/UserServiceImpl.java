@@ -9,8 +9,11 @@ import com.submerge.subfriends.exception.BusinessException;
 import com.submerge.subfriends.mapper.UserMapper;
 import com.submerge.subfriends.model.domain.User;
 import com.submerge.subfriends.service.UserService;
+import com.submerge.subfriends.utils.AlgorithmUtils;
+import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.wp.usermodel.Paragraph;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -18,10 +21,7 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -290,7 +290,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //Todo 如果用户什么更新参数都没有传，直接返回，不执行update语句
-        if(user == null){
+        if (user == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR);
         }
         //如果不是管理员，只允许更新当前（自己）用户
@@ -303,7 +303,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         return userMapper.updateById(user);
     }
-
 
 
     @Override
@@ -321,8 +320,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     }
 
-     /**
+    /**
      * 获取当前用户
+     *
      * @param request
      * @return
      */
@@ -336,6 +336,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         return user;
+    }
+
+    @Override
+    public List<User> matchUsers(long num, User loginUser) {
+        // 过滤掉标签为空的用户
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.isNotNull("tags");
+        userQueryWrapper.select("id", "tags");
+        List<User> userList = this.list(userQueryWrapper);
+        String tags = loginUser.getTags();
+        Gson gson = new Gson();
+        List<String> tagList = gson.fromJson(tags, new TypeToken<List<String>>() {
+        }.getType());
+        // 用户列表的下标 ==》 相似度
+//        SortedMap<Integer, Long> indexDistanceMap = new TreeMap<>(Comparator.comparingInt(a -> a));
+        List<Pair<User, Long>> list = new ArrayList<>();
+        // 依次计算所有用户和当前用户的相似度
+        for (int i = 0; i < userList.size(); i++) {
+            User user = userList.get(i);
+            // 无标签或者为当前用户自己
+            String userTags = user.getTags();
+            if (StringUtils.isBlank(userTags) || user.getId() == loginUser.getId()) {
+                continue;
+            }
+            List<String> userTagList = gson.fromJson(tags, new TypeToken<List<String>>() {
+            }.getType());
+            // 计算分数
+            long distance = AlgorithmUtils.minDistance(tagList, userTagList);
+//            indexDistanceMap.put(i, distance);
+            list.add(new Pair<>(user, distance));
+        }
+        // 按编辑距离由小到大排列
+        List<Pair<User, Long>> topUserPairList = list.stream()
+                .sorted((a, b) -> (int) ((a.getValue() - b.getValue())))
+                .limit(num)
+                .collect(Collectors.toList());
+        //原本顺序的 userId 列表
+        List<Long> userIdList = topUserPairList
+                .stream()
+                .map(pair -> pair.getKey().getId())
+                .collect(Collectors.toList());
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id",userIdList);
+        Map<Long, List<User>> userIdUserListMap = this.list(queryWrapper)
+                .stream()
+                .map(user -> getSafetyUser(user))
+                .collect(Collectors.groupingBy(User::getId));
+        ArrayList<User> finalUserList = new ArrayList<>();
+        for (Long userId : userIdList) {
+            finalUserList.add(userIdUserListMap.get(userId).get(0));
+        }
+        return finalUserList;
     }
 }
 
