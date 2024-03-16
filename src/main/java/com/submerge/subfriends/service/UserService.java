@@ -2,6 +2,7 @@ package com.submerge.subfriends.service;
 
 import com.submerge.subfriends.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.submerge.subfriends.model.request.UserRegisterRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -16,14 +17,10 @@ public interface UserService extends IService<User> {
 
     /**
      * 用户注册
-     *
-     * @param userAccount   用户账户
-     * @param userPassword  用户密码
-     * @param checkPassword 用户校验码
-     * @param stuCode       11位学号
-     * @return 新用户id
+     * @param userRegisterRequest
+     * @return
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword, String stuCode);
+    long userRegister(UserRegisterRequest userRegisterRequest);
 
     /**
      * 用户登录

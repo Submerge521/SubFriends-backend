@@ -53,17 +53,19 @@ public class UserController {
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.NULL_ERROR, "请求参数为空");
         }
-
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         String stuCode = userRegisterRequest.getStuCode();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, stuCode)) {
+        Integer gender = userRegisterRequest.getGender();
+        String phone = userRegisterRequest.getPhone();
+        String email = userRegisterRequest.getEmail();
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, stuCode, phone,email)) {
             return null;
         }
-        long result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
+        long result = userService.userRegister(userRegisterRequest);
 //        return new BaseResponse<>(0, result,"OK");
         return ResultUtils.success(result);
     }
@@ -77,7 +79,7 @@ public class UserController {
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            throw new BusinessException(ErrorCode.NULL_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "输入账号或密码不正确！");
         }
         User user = userService.userLogin(userAccount, userPassword, request);
 //        return new BaseResponse<>(0, user,"OK");
@@ -194,6 +196,7 @@ public class UserController {
 
     /**
      * 获取最匹配的用户
+     *
      * @param num
      * @param request
      * @return
@@ -204,6 +207,6 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
-        return ResultUtils.success(userService.matchUsers(num,loginUser));
+        return ResultUtils.success(userService.matchUsers(num, loginUser));
     }
 }

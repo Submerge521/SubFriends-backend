@@ -8,12 +8,12 @@ import com.submerge.subfriends.common.ErrorCode;
 import com.submerge.subfriends.exception.BusinessException;
 import com.submerge.subfriends.mapper.UserMapper;
 import com.submerge.subfriends.model.domain.User;
+import com.submerge.subfriends.model.request.UserRegisterRequest;
 import com.submerge.subfriends.service.UserService;
 import com.submerge.subfriends.utils.AlgorithmUtils;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.wp.usermodel.Paragraph;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -53,63 +53,60 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword, String stuCode) {
+    public long userRegister(UserRegisterRequest userRegisterRequest) {
         // 校验
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, stuCode)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空！");
+        if (userRegisterRequest == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "请求参数为空！");
         }
-        if (userAccount.length() < 4) {
+        if (userRegisterRequest.getUserAccount().length() < 4) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短！");
         }
-        if (userPassword.length() < 8 || checkPassword.length() < 8) {
+        if (userRegisterRequest.getUserPassword().length() < 8 || userRegisterRequest.getCheckPassword().length() < 8) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码过短！");
         }
-        if (stuCode.length() != 11) {
+        if (userRegisterRequest.getStuCode().length() != 11) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "学号不为11位！");
         }
-
         //账户不能包含特殊字符
         String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
-        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
+        Matcher matcher = Pattern.compile(validPattern).matcher(userRegisterRequest.getUserAccount());
         if (matcher.find()) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户不能包含特殊字符！");
         }
-
         // 密码和校验密码相同
-        if (!userPassword.equals(checkPassword)) {
+        if (!userRegisterRequest.getUserPassword().equals(userRegisterRequest.getCheckPassword())) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次输入密码不一致！");
         }
-
         // 账户不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userAccount", userRegisterRequest.getUserAccount());
         long count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复！");
         }
-
         // 11位学号不能重复
         queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("stuCode", stuCode);
+        queryWrapper.eq("stuCode", userRegisterRequest.getStuCode());
         count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "学号重复！");
         }
-
         // 加密
         final String SALT = "Submerge";
-        String encrpytPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        String encrpytPassword = DigestUtils.md5DigestAsHex((SALT + userRegisterRequest.getUserPassword()).getBytes());
 
         // 插入数据
         User user = new User();
-        user.setUserAccount(userAccount);
+        user.setUserAccount(userRegisterRequest.getUserAccount());
         user.setUserPassword(encrpytPassword);
-        user.setStuCode(stuCode);
+        user.setGender(userRegisterRequest.getGender());
+        user.setPhone(userRegisterRequest.getPhone());
+        user.setStuCode(userRegisterRequest.getStuCode());
+        user.setEmail(userRegisterRequest.getEmail());
         boolean saveResult = this.save(user);
         if (!saveResult) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-
 
         return user.getId();
     }
@@ -119,13 +116,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            throw new BusinessException(ErrorCode.NULL_ERROR);
+            throw new BusinessException(ErrorCode.NULL_ERROR, "请求参数为空");
         }
         if (userAccount.length() < 4) {
-            throw new BusinessException(ErrorCode.NULL_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号格式有误");
         }
         if (userPassword.length() < 8) {
-            throw new BusinessException(ErrorCode.NULL_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码格式有误");
         }
 
         //账户不能包含特殊字符
@@ -342,8 +339,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public List<User> matchUsers(long num, User loginUser) {
         // 过滤掉标签为空的用户
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.isNotNull("tags");
         userQueryWrapper.select("id", "tags");
+        userQueryWrapper.isNotNull("tags");
         List<User> userList = this.list(userQueryWrapper);
         String tags = loginUser.getTags();
         Gson gson = new Gson();
@@ -360,7 +357,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             if (StringUtils.isBlank(userTags) || user.getId() == loginUser.getId()) {
                 continue;
             }
-            List<String> userTagList = gson.fromJson(tags, new TypeToken<List<String>>() {
+            List<String> userTagList = gson.fromJson(userTags, new TypeToken<List<String>>() {
             }.getType());
             // 计算分数
             long distance = AlgorithmUtils.minDistance(tagList, userTagList);
@@ -378,12 +375,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 .map(pair -> pair.getKey().getId())
                 .collect(Collectors.toList());
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("id",userIdList);
+        queryWrapper.in("id", userIdList);
         Map<Long, List<User>> userIdUserListMap = this.list(queryWrapper)
                 .stream()
                 .map(user -> getSafetyUser(user))
                 .collect(Collectors.groupingBy(User::getId));
-        ArrayList<User> finalUserList = new ArrayList<>();
+        List<User> finalUserList = new ArrayList<>();
         for (Long userId : userIdList) {
             finalUserList.add(userIdUserListMap.get(userId).get(0));
         }

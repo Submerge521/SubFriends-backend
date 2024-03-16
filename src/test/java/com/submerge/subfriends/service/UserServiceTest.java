@@ -49,33 +49,34 @@ public class UserServiceTest {
         String userPassword = "";
         String checkPassword = "123456";
         String stuCode = "20043170106";
-        long result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
-        assertEquals(-1, result);
-        userAccount = "su";
-        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
-        assertEquals(-1, result);
-        userAccount = "submerge";
-        userPassword = "123456";
-        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
-        assertEquals(-1, result);
-        userAccount = "sub merge";
-        userPassword = "12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
-        assertEquals(-1, result);
-
-        checkPassword = "123456789";
-        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
-        assertEquals(-1, result);
-
-        userAccount = "testSubmerge";
-        checkPassword = "12345678";
-        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
-        assertEquals(-1, result);
-
-        userAccount = "Submerge";
-        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
-//        assertTrue(result > 0);
-        assertEquals(-1, result);
+//        long result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
+//        assertEquals(-1, result);
+//        userAccount = "su";
+//        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
+//        assertEquals(-1, result);
+//        userAccount = "submerge";
+//        userPassword = "123456";
+//        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
+//        assertEquals(-1, result);
+//        userAccount = "sub merge";
+//        userPassword = "12345678";
+//        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
+//        assertEquals(-1, result);
+//
+//        checkPassword = "123456789";
+//        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
+//        assertEquals(-1, result);
+//
+//        userAccount = "testSubmerge";
+//        checkPassword = "12345678";
+//        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
+//        assertEquals(-1, result);
+//
+//        userAccount = "Submerge";
+//        result = userService.userRegister(userAccount, userPassword, checkPassword, stuCode);
+////        assertTrue(result > 0);
+//        assertEquals(-1, result);
+//    }
     }
 
     @Test

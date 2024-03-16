@@ -1,5 +1,6 @@
 package com.submerge.subfriends.model.request;
 
+import io.swagger.models.auth.In;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -22,5 +23,9 @@ public class UserRegisterRequest implements Serializable {
     private String userAccount;
     private String userPassword;
     private String checkPassword;
+    private Integer gender;
+    private String phone;
     private String stuCode;
+    private String email;
+
 }
